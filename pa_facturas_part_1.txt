@@ -1,0 +1,195 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`inserta_tienda`(
+in nombret varchar (64),
+in rfct varchar (13),
+in callet varchar (32),
+in coloniat varchar (32),
+in cpt varchar (5),
+in ciudadt varchar (32),
+in num_telefonot varchar (10),
+in correo_electronicot varchar (64)
+)
+begin
+  insert into tabla_tiendas(nombre, rfc, calle,
+  colonia, cp, ciudad, num_telefono, correo_electronico)
+  values(nombret, rfct, callet, coloniat, cpt, ciudadt,
+  num_telefonot, correo_electronicot);
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`inserta_productos`(
+in descripcionp varchar (64),
+in precioup decimal (13,2),
+in preciovp decimal (13,2),
+in id_umedidap int (3)
+)
+begin 
+  declare id_p int;
+  select if(max(tp.id_producto)+1 is null,1,max(tp.id_producto)+1) into id_p
+  from tabla_productos tp;
+    
+  insert into tabla_productos(id_producto,descripcion, preciou,preciov,id_umedida)
+  values(id_p,descripcionp, precioup,preciovp,id_umedidap);
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`insertar_umedida`(
+  in u_medida varchar(16)
+)
+begin
+  insert into tabla_umedidas(umedida)
+  values(u_medida);
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`insertar_cliente`(
+  in nombrec varchar(16),
+  in apellidoP varchar(16),
+  in apellidoM varchar(16),
+  in numTC varchar(10),
+  in rfcc varchar(13),
+  in callec varchar(32),
+  in coloniac varchar(32),
+  in cpc varchar(5),
+  in ciudadc varchar(32),
+  in correoEC varchar(64)
+)
+begin
+  insert into tabla_clientes(nombre,apellido_paterno,apellido_materno,
+  num_telefono,rfc,calle,colonia,cp,ciudad,correo_electronico)
+  values(nombrec,apellidoP,apellidoM,numTC,rfcc, callec,coloniac,cpc,ciudadc,correoEC);
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`elimina_umedida`(
+  in id int
+)
+begin
+  delete from tabla_umedidas
+  where id_umedida=id;
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`elimina_producto`(
+	in id_productop int
+)
+begin
+	delete from tabla_productos
+	where id_producto = id_productop;
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`elimina_cliente`(
+in id int
+)
+begin
+	delete from tabla_clientes
+	where id_cliente= id;
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`actualiza_umedida`(
+  in id int,
+  in u_medida varchar(16)
+)
+begin
+  update tabla_umedidas
+  set umedida=u_medida
+  where id_umedida=id;
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`actualiza_tienda`(
+in id_t int,
+in nombret varchar (64),
+in rfct varchar (13),
+in callet varchar (32),
+in coloniat varchar (32),
+in cpt varchar (5),
+in ciudadt varchar (32),
+in num_telefonot varchar (10),
+in correo_electronicot varchar (64)
+)
+begin
+  update tabla_tiendas 
+  set nombre= nombret,
+  rfc = rfct, 
+  calle = callet,
+  colonia = coloniat,
+  cp = cpt,
+  ciudad = ciudadt,
+  num_telefono = num_telefonot,
+  correo_electronico = correo_electronicot
+  where id_tienda=id_t;
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`actualiza_productos`(
+in id_p int,
+in descripcionp varchar (64),
+in precioup decimal (13,2),
+in preciovp decimal (13,2),
+in id_umedidap int (3)
+)
+begin 
+ update tabla_productos
+ set descripcion=descripcionp,
+ preciou=precioup,
+ preciov=preciovp,
+ id_umedida=id_umedidap
+ where id_producto=id_p;
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`actualiza_cliente`(
+  in id_c int,
+  in nombrec varchar(16),
+  in apellidoP varchar(16),
+  in apellidoM varchar(16),
+  in numTC varchar(10),
+  in rfcc varchar(13),
+  in callec varchar(32),
+  in coloniac varchar(32),
+  in cpc varchar(5),
+  in ciudadc varchar(32),
+  in correoEC varchar(64)
+)
+begin
+  update tabla_clientes 
+  set nombre= nombrec,
+  apellido_paterno= apellidoP,
+  apellido_materno= apellidoM,
+  num_telefono= numTC,
+  rfc= rfcc,
+  calle= callec,
+  colonia= coloniac,
+  cp= cpc,
+  ciudad= ciudadc,
+  correo_electronico= correoEC
+  where id_cliente=id_c;
+end
+
+create or replace
+algorithm = UNDEFINED view `datacel`.`vista_umedidas` as
+select
+    `datacel`.`tabla_umedidas`.`id_umedida` as `id_umedida`,
+    `datacel`.`tabla_umedidas`.`umedida` as `umedida`
+from
+    `datacel`.`tabla_umedidas`;
+
+create or replace
+algorithm = UNDEFINED view `datacel`.`vista_productos` as
+select
+    `datacel`.`tabla_productos`.`id_producto` as `id_producto`,
+    `datacel`.`tabla_productos`.`descripcion` as `descripcion`,
+    `datacel`.`tabla_productos`.`preciou` as `preciou`,
+    `datacel`.`tabla_productos`.`preciov` as `preciov`,
+    `datacel`.`tabla_productos`.`id_umedida` as `id_umedida`
+from
+    `datacel`.`tabla_productos`;
+
+create or replace
+algorithm = UNDEFINED view `datacel`.`vista_clientes` as
+select
+    `datacel`.`tabla_clientes`.`id_cliente` as `id_cliente`,
+    `datacel`.`tabla_clientes`.`nombre` as `nombre`,
+    `datacel`.`tabla_clientes`.`apellido_paterno` as `apellido_paterno`,
+    `datacel`.`tabla_clientes`.`apellido_materno` as `apellido_materno`,
+    `datacel`.`tabla_clientes`.`num_telefono` as `num_telefono`,
+    `datacel`.`tabla_clientes`.`rfc` as `rfc`,
+    `datacel`.`tabla_clientes`.`calle` as `calle`,
+    `datacel`.`tabla_clientes`.`colonia` as `colonia`,
+    `datacel`.`tabla_clientes`.`cp` as `cp`,
+    `datacel`.`tabla_clientes`.`ciudad` as `ciudad`,
+    `datacel`.`tabla_clientes`.`correo_electronico` as `correo_electronico`
+from
+    `datacel`.`tabla_clientes`;
