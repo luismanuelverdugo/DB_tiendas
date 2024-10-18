@@ -1,0 +1,81 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`inserta_productos`(
+in descripcionp varchar (64),
+in precioup decimal (13,2),
+in preciovp decimal (13,2),
+in id_umedidap int (3),
+in inventariop int
+)
+begin 
+  declare id_p int;
+ 
+  select if(max(tp.id_producto)+1 is null,1,max(tp.id_producto)+1) into id_p
+  from tabla_productos tp;
+    
+  insert into tabla_productos(id_producto,descripcion, preciou,preciov,id_umedida)
+  values(id_p,descripcionp, precioup,preciovp,id_umedidap);
+ 
+  insert into tabla_inventarios(inventario, id_producto)
+  values (inventariop, id_p);
+end
+
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `datacel`.`genera_id_entrada`() RETURNS int(11)
+    DETERMINISTIC
+BEGIN
+
+    DECLARE id_e int;
+
+    select if(max(te.id_entrada)+1 is null,1
+    ,max(te.id_entrada)+1) into id_e
+    from tabla_entradas te;
+    
+    RETURN id_e; 
+
+END
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `datacel`.`inserta_entrada`(fechae date, 
+nfact varchar(10), descrip varchar(128)) RETURNS int(11)
+    DETERMINISTIC
+BEGIN
+    
+    DECLARE id_e int;
+    
+    SELECT datacel.genera_id_entrada() into id_e;
+
+    insert into tabla_entradas (id_entrada, fecha, 
+    nfactura, descripcion)   
+    values(id_e,fechae,nfact, descrip);
+    
+    RETURN id_e;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`inserta_dentradas`(
+cantidade decimal (5,0),
+id_productoe int(10),
+id_e int
+)
+begin
+	insert into tabla_dentradas(cantidad,id_producto,id_entrada)
+	values(cantidade, id_productoe, id_e);
+    CALL datacel.actualiza_inventario(cantidade, id_productoe, 1);
+
+end
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `datacel`.`actualiza_inventario`(
+  in cantidadp int,
+  in idp int,
+  in operacionp int
+)
+begin
+	if (operacionp = 1) then
+		update tabla_inventarios ti
+    	set ti.inventario = ti.inventario+cantidadp
+    	where ti.id_producto = idp;
+    end if;
+    if (operacionp = 2) then
+    	update tabla_inventarios ti
+    	set ti.inventario = ti.inventario-cantidadp
+    	where ti.id_producto = idp;
+    end if;
+	
+end
